@@ -1,9 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using Skopia.Tasks.Application.DTOs;
-using Skopia.Tasks.Domain.Entities;
-using Skopia.Tasks.Infrastructure.Persistence;
+using Skopia.Tasks.Application.Interfaces;
 
 namespace Skopia.Tasks.Controllers
 {
@@ -11,82 +8,52 @@ namespace Skopia.Tasks.Controllers
     [Route("api/[controller]")]
     public class ProjectController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IProjectService _projectService;
 
-        public ProjectController(AppDbContext context)
+        public ProjectController(IProjectService projectService)
         {
-            _context = context;
+            _projectService = projectService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var projects = await _context.Projects
-                .Include(p => p.Tasks)
-                .ToListAsync();
-
+            var projects = await _projectService.GetAllAsync();
             return Ok(projects);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var project = await _context.Projects
-                .Include(p => p.Tasks)
-                .FirstOrDefaultAsync(p => p.Id == id);
-
+            var project = await _projectService.GetByIdAsync(id);
             if (project == null)
-                return NotFound("Project not found");
+                return NotFound($"Projeto com ID {id} não encontrado.");
 
             return Ok(project);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] ProjectCreateDto dto)
+        public async Task<IActionResult> CreateAsync([FromBody] ProjectDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var project = new Project
-            {
-                Name = dto.Name,
-                Description = dto.Description
-            };
-
-            _context.Projects.Add(project);
-            await _context.SaveChangesAsync();
-
-            var result = new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description
-            };
-
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = project.Id }, result);
+            var createdProject = await _projectService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetByIdAsync), new { id = createdProject.Id }, createdProject);
         }
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] ProjectUpdateDto dto)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] ProjectDto dto)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null)
-                return NotFound("Project not found");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            project.Name = dto.Name;
-            project.Description = dto.Description;
+            var updated = await _projectService.UpdateAsync(id, dto);
+            if (updated == null)
+                return NotFound($"Projeto com ID {id} não encontrado.");
 
-            await _context.SaveChangesAsync();
-
-            var result = new ProjectDto
-            {
-                Id = project.Id,
-                Name = project.Name,
-                Description = project.Description
-            };
-
-            return Ok(result);
+            return Ok(updated);
         }
 
 
@@ -94,12 +61,10 @@ namespace Skopia.Tasks.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var project = await _context.Projects.FindAsync(id);
-            if (project == null)
-                return NotFound("Project not found");
+            var deleted = await _projectService.DeleteAsync(id);
+            if (!deleted)
+                return BadRequest("Não é possível excluir um projeto que ainda tenha tarefas pendentes.");
 
-            _context.Projects.Remove(project);
-            await _context.SaveChangesAsync();
             return NoContent();
         }
     }

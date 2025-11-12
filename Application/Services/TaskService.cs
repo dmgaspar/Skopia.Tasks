@@ -22,7 +22,7 @@ namespace Skopia.Tasks.Application.Services
         {
             var projectExists = await _context.Projects.AnyAsync(p => p.Id == projectId);
             if (!projectExists)
-                throw new NotFoundException("Project not found");
+                throw new NotFoundException("Projeto não encontrado");
 
             var tasks = await _context.Tasks
                 .Where(t => t.ProjectId == projectId)
@@ -43,11 +43,11 @@ namespace Skopia.Tasks.Application.Services
         public async Task<TaskDto> CreateAsync(int projectId, TaskDto dto)
         {
             var project = await _context.Projects.FindAsync(projectId)
-                ?? throw new NotFoundException("Project not found");
+                ?? throw new NotFoundException("Projeto não encontrado");
 
             var count = await _context.Tasks.CountAsync(t => t.ProjectId == projectId);
             if (count >= 20)
-                throw new BusinessException("A project cannot have more than 20 tasks");
+                throw new BusinessException("Um projeto não pode ter mais de 20 tarefas");
 
             var task = new TaskItem
             {
@@ -70,7 +70,7 @@ namespace Skopia.Tasks.Application.Services
         {
             var task = await _context.Tasks.FindAsync(id);
             if (task == null)
-                throw new NotFoundException("Task not found");
+                throw new NotFoundException("Tarefa não encontrada");
 
             // Save original values for history tracking
             var originalTitle = task.Title;
@@ -99,7 +99,7 @@ namespace Skopia.Tasks.Application.Services
         public async Task DeleteAsync(int id)
         {
             var task = await _context.Tasks.FindAsync(id)
-                ?? throw new NotFoundException("Task not found");
+                ?? throw new NotFoundException("Tarefa não encontrada");
 
             _context.Tasks.Remove(task);
             await _context.SaveChangesAsync();

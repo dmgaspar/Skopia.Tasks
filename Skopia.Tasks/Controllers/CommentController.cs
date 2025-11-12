@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Skopia.Tasks.Infrastructure.Persistence;
-using Skopia.Tasks.Domain.Entities;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using Skopia.Tasks.Application.Interfaces;
 
 namespace Skopia.Tasks.Controllers
 {
@@ -10,55 +7,39 @@ namespace Skopia.Tasks.Controllers
     [Route("api/[controller]")]
     public class CommentController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly ICommentService _commentService;
 
-        public CommentController(AppDbContext context)
+        public CommentController(ICommentService commentService)
         {
-            _context = context;
+            _commentService = commentService;
         }
 
         [HttpPost("{taskItemId}")]
         public async Task<IActionResult> CreateAsync(int taskItemId, [FromBody] string text)
         {
-            var task = await _context.Tasks.FindAsync(taskItemId);
-            if (task == null)
-                return NotFound("Task not found");
+            var created = await _commentService.CreateAsync(taskItemId, text);
+            if (created == null)
+                return NotFound("Task not found.");
 
-            var comment = new TaskComment
-            {
-                TaskItemId = taskItemId,
-                Text = text,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.TaskComments.Add(comment);
-            await _context.SaveChangesAsync();
-
-            return Ok(comment);
+            return Ok(created);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(int id, [FromBody] string text)
         {
-            var comment = await _context.TaskComments.FindAsync(id);
-            if (comment == null)
-                return NotFound("Comment not found");
+            var updated = await _commentService.UpdateAsync(id, text);
+            if (updated == null)
+                return NotFound("Comment not found.");
 
-            comment.Text = text;
-            await _context.SaveChangesAsync();
-
-            return Ok(comment);
+            return Ok(updated);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var comment = await _context.TaskComments.FindAsync(id);
-            if (comment == null)
-                return NotFound("Comment not found");
-
-            _context.TaskComments.Remove(comment);
-            await _context.SaveChangesAsync();
+            var deleted = await _commentService.DeleteAsync(id);
+            if (!deleted)
+                return NotFound("Comment not found.");
 
             return NoContent();
         }
