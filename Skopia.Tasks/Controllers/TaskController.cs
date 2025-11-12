@@ -11,9 +11,12 @@ namespace Skopia.Tasks.Controllers
     {
         private readonly ITaskService _taskService;
 
-        public TaskController(ITaskService taskService)
-        {
+        private readonly IProjectService _projectService;
+
+        public TaskController(ITaskService taskService, IProjectService projectService)
+        { 
             _taskService = taskService;
+            _projectService = projectService;
         }
 
         [HttpGet("project/{projectId}")]
@@ -31,7 +34,7 @@ namespace Skopia.Tasks.Controllers
         }
 
         [HttpPost("{projectId}")]
-        public async Task<IActionResult> Create(int projectId, [FromBody] TaskDto dto)
+        public async Task<IActionResult> Create(int projectId, [FromBody] TaskCreateDto dto)
         {
             try
             {
@@ -48,12 +51,13 @@ namespace Skopia.Tasks.Controllers
             }
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] TaskDto dto)
+
+        [HttpPut("{projectId}/{taskId}")]
+        public async Task<IActionResult> UpdateAsync(int projectId, int taskId, [FromBody] TaskUpdateDto dto)
         {
             try
             {
-                var updated = await _taskService.UpdateAsync(id, dto);
+                var updated = await _taskService.UpdateAsync(projectId, taskId, dto);
                 return Ok(updated);
             }
             catch (NotFoundException ex)
@@ -65,6 +69,7 @@ namespace Skopia.Tasks.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)

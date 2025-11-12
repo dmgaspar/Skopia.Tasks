@@ -40,51 +40,75 @@ namespace Skopia.Tasks.Application.Services
             return tasks;
         }
 
-        public async Task<TaskDto> CreateAsync(int projectId, TaskDto dto)
+        public async Task<TaskDto> CreateAsync(int projectId, TaskCreateDto dto)
         {
+            // Verifica se o projeto existe
             var project = await _context.Projects.FindAsync(projectId)
-                ?? throw new NotFoundException("Projeto não encontrado");
+                ?? throw new NotFoundException("Projeto não encontrado.");
 
+            // Regra de negócio: limite máximo de tarefas por projeto
             var count = await _context.Tasks.CountAsync(t => t.ProjectId == projectId);
             if (count >= 20)
-                throw new BusinessException("Um projeto não pode ter mais de 20 tarefas");
+                throw new BusinessException("Um projeto não pode ter mais de 20 tarefas.");
 
+            // Valida enums recebidos
+            if (!Enum.TryParse<TaskPriority>(dto.Priority, true, out var priority))
+                throw new BusinessException($"Prioridade '{dto.Priority}' inválida.");
+
+            if (!Enum.TryParse<Domain.Enums.TaskStatus>(dto.Status, true, out var status))
+                throw new BusinessException($"Status '{dto.Status}' inválido.");
+
+            // Cria a nova tarefa
             var task = new TaskItem
             {
                 ProjectId = projectId,
                 Title = dto.Title,
                 Description = dto.Description,
                 DueDate = dto.DueDate,
-                Priority = Enum.Parse<TaskPriority>(dto.Priority, true),
-                Status = Enum.Parse<Skopia.Tasks.Domain.Enums.TaskStatus>(dto.Status, true)
+                Priority = priority,
+                Status = status
             };
 
+            // Persiste no banco
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
-            dto.Id = task.Id;
-            return dto;
+            // Retorna a DTO padronizada
+            return new TaskDto
+            {
+                Id = task.Id,
+                ProjectId = projectId,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate,
+                Priority = task.Priority.ToString(),
+                Status = task.Status.ToString()
+            };
         }
 
-        public async Task<TaskDto> UpdateAsync(int id, TaskDto dto)
+        public async Task<TaskDto> UpdateAsync(int projectId, int taskId, TaskUpdateDto dto)
         {
-            var task = await _context.Tasks.FindAsync(id);
-            if (task == null)
-                throw new NotFoundException("Tarefa não encontrada");
+            var project = await _context.Projects
+                .Include(p => p.Tasks)
+                .FirstOrDefaultAsync(p => p.Id == projectId);
 
-            // Save original values for history tracking
+            if (project == null)
+                throw new NotFoundException("Projeto não encontrado.");
+
+            var task = project.Tasks.FirstOrDefault(t => t.Id == taskId);
+            if (task == null)
+                throw new NotFoundException("Tarefa não encontrada neste projeto.");
+
             var originalTitle = task.Title;
             var originalDescription = task.Description;
             var originalDueDate = task.DueDate?.ToString("yyyy-MM-dd");
             var originalStatus = task.Status.ToString();
 
-            // Business rule: cannot change Priority
             task.Title = dto.Title;
             task.Description = dto.Description;
             task.DueDate = dto.DueDate;
             task.Status = Enum.Parse<Domain.Enums.TaskStatus>(dto.Status, true);
 
-            // Add history entries for changes
             AddHistoryIfChanged(task, nameof(TaskItem.Title), originalTitle, task.Title);
             AddHistoryIfChanged(task, nameof(TaskItem.Description), originalDescription, task.Description);
             AddHistoryIfChanged(task, nameof(TaskItem.DueDate), originalDueDate, task.DueDate?.ToString("yyyy-MM-dd"));
@@ -92,7 +116,16 @@ namespace Skopia.Tasks.Application.Services
 
             await _context.SaveChangesAsync();
 
-            return dto;
+            return new TaskDto
+            {
+                Id = task.Id,
+                ProjectId = projectId,
+                Title = task.Title,
+                Description = task.Description,
+                DueDate = task.DueDate,
+                Status = task.Status.ToString(),
+                Priority = task.Priority.ToString()
+            };
         }
 
 

@@ -15,16 +15,12 @@ namespace Skopia.Tasks.Application.Services
             _context = context;
         }
 
-        public async Task<IEnumerable<PerformanceReportDto>> GetPerformanceReportAsync(string role)
+        public async Task<IEnumerable<PerformanceReportDto>> GetPerformanceReportAsync()
         {
-            // Simulate permission check
-            if (role.ToLower() != "manager")
-                throw new UnauthorizedAccessException("Access is permitted only for users with manager privileges.");
-
             var thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
 
             var completedTasksQuery = _context.Tasks
-                .Where(t => t.Status == Domain.Enums.TaskStatus.Done && t.DueDate >= thirtyDaysAgo)
+                .Where(t => t.Status == Domain.Enums.TaskStatus.Concluida && t.DueDate >= thirtyDaysAgo)
                 .GroupBy(t => t.ProjectId) // future: group by ChangedByUserId
                 .Select(g => new PerformanceReportDto
                 {

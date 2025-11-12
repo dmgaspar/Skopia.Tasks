@@ -8,8 +8,8 @@ namespace Skopia.Tasks.Domain.Enums
 {
     public enum TaskStatus
     {
-        Pending = 0,
-        InProgress = 1,
-        Done = 2
+        Pendente = 1,
+        EmAndamento = 2,
+        Concluida = 3
     }
 }

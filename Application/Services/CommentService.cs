@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Skopia.Tasks.Application.DTOs;
+using Skopia.Tasks.Application.Exceptions;
 using Skopia.Tasks.Application.Interfaces;
 using Skopia.Tasks.Domain.Entities;
 using Skopia.Tasks.Infrastructure.Persistence;
@@ -17,10 +18,15 @@ namespace Skopia.Tasks.Application.Services
 
         public async Task<CommentDto?> CreateAsync(int taskItemId, string text)
         {
-            var task = await _context.Tasks.FindAsync(taskItemId);
-            if (task == null)
-                return null;
+            // Verifica se a tarefa existe
+            var task = await _context.Tasks
+                .Include(t => t.History)
+                .FirstOrDefaultAsync(t => t.Id == taskItemId);
 
+            if (task == null)
+                throw new NotFoundException("Tarefa não encontrada.");
+
+            // Cria o comentário
             var comment = new TaskComment
             {
                 TaskItemId = taskItemId,
@@ -29,6 +35,18 @@ namespace Skopia.Tasks.Application.Services
             };
 
             _context.TaskComments.Add(comment);
+
+            var historyEntry = new TaskHistory
+            {
+                TaskItem = task,
+                FieldName = "Comentário",
+                OldValue = string.Empty,
+                NewValue = text,
+                ChangedAt = DateTime.UtcNow,
+            };
+
+            _context.TaskHistories.Add(historyEntry);
+
             await _context.SaveChangesAsync();
 
             return new CommentDto
@@ -39,6 +57,7 @@ namespace Skopia.Tasks.Application.Services
                 CreatedAt = comment.CreatedAt
             };
         }
+
 
         public async Task<CommentDto?> UpdateAsync(int id, string text)
         {

@@ -101,7 +101,7 @@ namespace Skopia.Tasks.Application.Services
                 };
             }
 
-            if (project.Tasks != null && project.Tasks.Any(t => t.Status != Domain.Enums.TaskStatus.Done))
+            if (project.Tasks != null && project.Tasks.Any(t => t.Status != Domain.Enums.TaskStatus.Concluida))
             {
                 return new DeleteResultDto
                 {

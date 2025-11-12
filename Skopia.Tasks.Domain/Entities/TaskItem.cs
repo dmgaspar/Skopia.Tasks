@@ -18,7 +18,7 @@ namespace Skopia.Tasks.Domain.Entities
         public string? Description { get; set; }
         public DateTime? DueDate { get; set; }
 
-        public DomainEnums.TaskStatus Status { get; set; } = DomainEnums.TaskStatus.Pending;
+        public DomainEnums.TaskStatus Status { get; set; } = DomainEnums.TaskStatus.Pendente;
         public TaskPriority Priority { get; set; }
 
         public ICollection<TaskComment> Comments { get; set; } = new List<TaskComment>();
