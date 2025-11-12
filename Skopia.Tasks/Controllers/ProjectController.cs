@@ -33,18 +33,19 @@ namespace Skopia.Tasks.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] ProjectDto dto)
+        public async Task<IActionResult> CreateAsync([FromBody] ProjectCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var createdProject = await _projectService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetByIdAsync), new { id = createdProject.Id }, createdProject);
+            return Created($"api/Project/{createdProject.Id}", createdProject);
+
         }
 
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] ProjectDto dto)
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] ProjectUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -56,16 +57,16 @@ namespace Skopia.Tasks.Controllers
             return Ok(updated);
         }
 
-
-
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
-            var deleted = await _projectService.DeleteAsync(id);
-            if (!deleted)
-                return BadRequest("Não é possível excluir um projeto que ainda tenha tarefas pendentes.");
+            var result = await _projectService.DeleteAsync(id);
+
+            if (!result.Success)
+                return BadRequest(result.Message);
 
             return NoContent();
         }
+
     }
 }

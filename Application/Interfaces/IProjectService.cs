@@ -12,8 +12,8 @@ namespace Skopia.Tasks.Application.Interfaces
     {
         Task<IEnumerable<ProjectDto>> GetAllAsync();
         Task<ProjectDto?> GetByIdAsync(int id);
-        Task<ProjectDto> CreateAsync(ProjectDto dto);
-        Task<ProjectDto?> UpdateAsync(int id, ProjectDto dto);
-        Task<bool> DeleteAsync(int id);
+        Task<ProjectDto> CreateAsync(ProjectCreateDto dto);
+        Task<ProjectDto?> UpdateAsync(int id, ProjectUpdateDto dto);
+        Task<DeleteResultDto> DeleteAsync(int id);
     }
 }
