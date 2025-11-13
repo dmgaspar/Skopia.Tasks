@@ -269,6 +269,86 @@ services:
 volumes:
   skopia-sqlserver-data:
 ```
+## Fase 2 – Refinamento (Perguntas para o PO)
+
+Abaixo estão algumas perguntas que auxiliam no refinamento do backlog e no planejamento das próximas entregas.
+
+### Requisitos e roadmap
+
+- Existe uma lista de funcionalidades planejadas para próximas versões (v2, v3, etc.)?
+- Há integrações previstas com outros sistemas internos ou serviços externos?
+- Quais funcionalidades são consideradas essenciais para o MVP e quais podem ser postergadas?
+
+### Fluxo de uso
+
+- Como o usuário final deve navegar entre projetos, tarefas, comentários e relatórios?
+- Existem regras de SLA, prazos máximos ou notificações automáticas relacionadas às tarefas?
+- Quais são os principais cenários de uso que precisam ser contemplados (fluxo principal e fluxos de exceção)?
+
+### Permissões
+
+- Quais perfis de usuário o sistema deve suportar (Admin, Gestor, Operador, Somente leitura)?
+- Quais operações cada perfil pode criar, editar, excluir e visualizar?
+- Existe necessidade de multi-tenant (várias empresas usando a mesma instância do sistema)?
+
+### Segurança e auditoria
+
+- Quais ações precisam ser auditadas (login, criação/edição/exclusão de dados, mudança de status, etc.)?
+- Há exigências específicas de LGPD ou outras normas de compliance?
+- Por quanto tempo os registros de auditoria precisam ser mantidos?
+
+### Relatórios e performance
+
+- Quais métricas são mais relevantes para o negócio (tarefas atrasadas, produtividade, tempo médio de conclusão, etc.)?
+- Os relatórios devem ser em tempo real ou podem ser consolidados periodicamente (diário, semanal, mensal)?
+- Existe necessidade de exportação (CSV, Excel, PDF) ou integração com ferramentas de BI (como Power BI)?
+
+### Funcionalidades pendentes
+
+- O sistema deve suportar anexos (documentos, imagens, evidências)?
+- Haverá envio de notificações por e-mail, SMS ou push?
+- Existe previsão de painéis/dashboards analíticos com visão consolidada?
+
+
+---
+
+# Fase 3 – Melhorias Propostas
+
+Aqui estão sugestões claras e objetivas de melhorias com foco em arquitetura, boas práticas, testes, segurança e infraestrutura.
+
+---
+
+##  Arquitetura
+
+- Migrar de controllers tradicionais para **Minimal APIs** (mais moderno e performático).
+- Aplicar **CQRS** para separar consultas de comandos em cenários mais complexos.
+- Introduzir **MediatR** para padronizar comunicação interna e reduzir acoplamento.
+- Criar camadas independentes com foco em Domain-Driven Design (DDD).
+
+##  Qualidade e Testes
+
+- Aumentar cobertura de testes para acima de **85%** (incluindo testes de integração).
+- Adicionar testes de carga e stress para endpoints críticos.
+- Configurar pipelines automáticos com GitHub Actions ou Azure DevOps.
+
+## ️ Segurança
+
+- Implementar autenticação JWT.
+- Adicionar controle de permissões baseado em roles/perfis.
+- Habilitar rate limiting contra ataques de força bruta.
+- Configurar HTTPS obrigatório.
+
+## Observabilidade
+
+- Inserir logs estruturados com Serilog.
+- Criar dashboards com Grafana para monitoramento.
+- Implementar rastreamento distribuído (OpenTelemetry).
+
+## DevOps e Infra
+
+- Criar imagens Docker multi-stage para reduzir tamanho.
+- Criar docker-compose para produção (com health checks + restart policies).
+- Habilitar migrações automáticas Entity Framework no container.
 
 ---
 
