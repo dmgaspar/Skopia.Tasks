@@ -142,64 +142,42 @@ Abaixo estão algumas perguntas que auxiliam no refinamento do backlog e no plan
 
 ---
 
-## Fase 3 – Possíveis Melhorias e Evolução da Arquitetura
+# Fase 3 – Melhorias Propostas
 
-Abaixo estão algumas sugestões de melhorias e evoluções para o projeto, considerando um cenário de crescimento e maturidade da solução.
+Aqui estão sugestões claras e objetivas de melhorias com foco em arquitetura, boas práticas, testes, segurança e infraestrutura.
 
-### Estrutura e arquitetura
+##  Arquitetura
 
-- Evoluir para uma abordagem mais aderente a **Clean Architecture**, enfatizando a separação entre camadas.
-- Refinar os casos de uso na camada `Application`, tornando as regras de negócio mais explícitas.
-- Manter a camada de domínio (`Domain`) completamente independente da infraestrutura (DB, frameworks, etc.).
+- Migrar de controllers tradicionais para **Minimal APIs** (mais moderno e performático).
+- Aplicar **CQRS** para separar consultas de comandos em cenários mais complexos.
+- Introduzir **MediatR** para padronizar comunicação interna e reduzir acoplamento.
+- Criar camadas independentes com foco em Domain-Driven Design (DDD).
 
-### Microsserviços
+##  Qualidade e Testes
 
-- Separar os contextos principais em serviços independentes, por exemplo:
-  - Projects Service
-  - Tasks Service
-  - Reporting Service
-- Cada serviço com seu próprio banco de dados (database per service).
-- Comunicação assíncrona entre serviços utilizando eventos de domínio (ex.: `TaskCreated`, `TaskCompleted`).
+- Aumentar cobertura de testes para acima de **85%** (incluindo testes de integração).
+- Adicionar testes de carga e stress para endpoints críticos.
+- Configurar pipelines automáticos com GitHub Actions ou Azure DevOps.
 
-### Observabilidade
+## ️ Segurança
 
-- Adicionar logging estruturado (por exemplo, com Serilog).
-- Configurar métricas e tracing distribuído com OpenTelemetry.
-- Utilizar Prometheus + Grafana ou Application Insights para monitoramento e visualização.
+- Implementar autenticação JWT.
+- Adicionar controle de permissões baseado em roles/perfis.
+- Habilitar rate limiting contra ataques de força bruta.
+- Configurar HTTPS obrigatório.
 
-### Mensageria
+## 📊 Observabilidade
 
-- Utilizar RabbitMQ ou Azure Service Bus para processamento assíncrono de tarefas e integração entre serviços.
-- Exemplos de uso:
-  - Envio de notificações
-  - Atualização de índices de busca
-  - Geração de relatórios em background
+- Inserir logs estruturados com Serilog.
+- Criar dashboards com Grafana para monitoramento.
+- Implementar rastreamento distribuído (OpenTelemetry).
 
-### Cache
+## 🐳 DevOps e Infra
 
-- Utilizar Redis para cachear consultas mais pesadas (relatórios, dashboards, listagens de grande volume).
-- Adotar o padrão Cache-Aside, com invalidação de cache durante operações de escrita.
+- Criar imagens Docker multi-stage para reduzir tamanho.
+- Criar docker-compose para produção (com health checks + restart policies).
+- Habilitar migrações automáticas Entity Framework no container.
 
-### CI/CD
-
-- Criar pipelines no GitHub Actions (ou ferramenta equivalente) para:
-  - Build da solução
-  - Execução dos testes unitários
-  - Build e publicação das imagens Docker
-  - Deploy automatizado para ambientes de desenvolvimento/homologação/produção
-
-### Deploy em cloud
-
-- Publicar a API em Azure App Service, Azure Container Apps, AWS ECS/EKS ou outra plataforma de containers.
-- Utilizar um banco de dados gerenciado, como Azure SQL ou AWS RDS, para simplificar operações de infraestrutura.
-
-### Padrões de projeto
-
-- Aplicar **CQRS** para separar comandos (escrita) de consultas (leitura), especialmente em relatórios e painéis.
-- Utilizar **Outbox Pattern** para garantir consistência entre transações no banco de dados e publicação de eventos.
-- Empregar padrões como **Strategy** e **Factory** para encapsular regras de negócio específicas que podem variar conforme o tipo de projeto, prioridade ou configuração.
-
----
 
 ## Dockerfile
 
