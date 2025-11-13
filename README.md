@@ -190,7 +190,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY ["Skopia.Tasks/Skopia.Tasks.csproj", "Skopia.Tasks/"]
-COPY ["Skopia.Tasks.Application/Skopia.Tasks.Application.csproj", "Skopia.Tasks.Application/"]
+COPY ["Application/Skopia.Tasks.Application.csproj", "Application/"]
 COPY ["Skopia.Tasks.Domain/Skopia.Tasks.Domain.csproj", "Skopia.Tasks.Domain/"]
 COPY ["Skopia.Tasks.Infrastructure/Skopia.Tasks.Infrastructure.csproj", "Skopia.Tasks.Infrastructure/"]
 
@@ -207,7 +207,9 @@ RUN dotnet publish "Skopia.Tasks.csproj" -c Release -o /app/publish /p:UseAppHos
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
 ENTRYPOINT ["dotnet", "Skopia.Tasks.dll"]
+
 ```
 
 ---
@@ -246,6 +248,7 @@ services:
 
 volumes:
   skopia-sqlserver-data:
+
 ```
 ## Fase 2 – Refinamento (Perguntas para o PO)
 
