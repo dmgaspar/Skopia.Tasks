@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Skopia.Tasks.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using Skopia.Tasks.Application.Exceptions;
+using Skopia.Tasks.Application.Interfaces;
+using Skopia.Tasks.Application.Services;
 
 namespace Skopia.Tasks.Controllers
 {
@@ -8,35 +9,33 @@ namespace Skopia.Tasks.Controllers
     [Route("api/[controller]")]
     public class HistoryController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IHistoryService _historyService;
 
-        public HistoryController(AppDbContext context)
+        public HistoryController(IHistoryService service)
         {
-            _context = context;
+            _historyService = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var history = await _context.TaskHistories
-                .OrderByDescending(h => h.ChangedAt)
-                .ToListAsync();
-
+            var history = await _historyService.GetAllAsync();
             return Ok(history);
         }
 
-        [HttpGet("task/{taskItemId}")]
-        public async Task<IActionResult> GetByTaskAsync(int taskItemId)
+        [HttpGet("task/{taskId}")]
+        public async Task<IActionResult> GetByTaskAsync(int taskId)
         {
-            var history = await _context.TaskHistories
-                .Where(h => h.TaskItemId == taskItemId)
-                .OrderByDescending(h => h.ChangedAt)
-                .ToListAsync();
-
-            if (!history.Any())
-                return NotFound("No history for this task");
-
-            return Ok(history);
+            try
+            {
+                var result = await _historyService.GetByTaskAsync(taskId);
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
+
     }
 }

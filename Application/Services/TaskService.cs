@@ -42,23 +42,19 @@ namespace Skopia.Tasks.Application.Services
 
         public async Task<TaskDto> CreateAsync(int projectId, TaskCreateDto dto)
         {
-            // Verifica se o projeto existe
             var project = await _context.Projects.FindAsync(projectId)
                 ?? throw new NotFoundException("Projeto não encontrado.");
 
-            // Regra de negócio: limite máximo de tarefas por projeto
             var count = await _context.Tasks.CountAsync(t => t.ProjectId == projectId);
             if (count >= 20)
                 throw new BusinessException("Um projeto não pode ter mais de 20 tarefas.");
 
-            // Valida enums recebidos
             if (!Enum.TryParse<TaskPriority>(dto.Priority, true, out var priority))
                 throw new BusinessException($"Prioridade '{dto.Priority}' inválida.");
 
             if (!Enum.TryParse<Domain.Enums.TaskStatus>(dto.Status, true, out var status))
                 throw new BusinessException($"Status '{dto.Status}' inválido.");
 
-            // Cria a nova tarefa
             var task = new TaskItem
             {
                 ProjectId = projectId,
@@ -69,11 +65,9 @@ namespace Skopia.Tasks.Application.Services
                 Status = status
             };
 
-            // Persiste no banco
             _context.Tasks.Add(task);
             await _context.SaveChangesAsync();
 
-            // Retorna a DTO padronizada
             return new TaskDto
             {
                 Id = task.Id,
@@ -154,4 +148,5 @@ namespace Skopia.Tasks.Application.Services
             }
         }
     }
+
 }
