@@ -29,7 +29,7 @@ namespace Skopia.Tasks.Controllers
         {
             var updated = await _commentService.UpdateAsync(id, text);
             if (updated == null)
-                return NotFound("Comment not found.");
+                return NotFound("Cometário não encontrado");
 
             return Ok(updated);
         }
@@ -39,7 +39,7 @@ namespace Skopia.Tasks.Controllers
         {
             var deleted = await _commentService.DeleteAsync(id);
             if (!deleted)
-                return NotFound("Comment not found.");
+                return NotFound("Cometário não encontrado");
 
             return NoContent();
         }
