@@ -43,6 +43,14 @@ namespace Skopia.Tasks
             app.UseAuthorization();
             app.MapControllers();
 
+            // Automatically migrate database in Docker 
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                db.Database.Migrate();
+            }
+
+
             app.Run();
         }
     }
