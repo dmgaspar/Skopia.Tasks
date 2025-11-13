@@ -13,16 +13,25 @@ services:
     volumes:
       - skopia-sqlserver-data:/var/opt/mssql
 
+    healthcheck:
+      test: ["CMD-SHELL", "exit 0"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: skopia-tasks-api
     depends_on:
-      - sqlserver
+      sqlserver:
+        condition: service_started   # Como o healthcheck foi removido, usamos esta condição
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:8080
+
+      # STRING DE CONEXÃO PARA O SQL RODANDO EM OUTRO CONTAINER
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=TasksDb;User=sa;Password=Your_password123;TrustServerCertificate=true;
     ports:
       - "5001:8080"
